@@ -118,7 +118,7 @@ pub struct XMLHttpRequest {
     timeout: Cell<u32>,
     with_credentials: Cell<bool>,
     upload: JS<XMLHttpRequestUpload>,
-    response_url: DOMString,
+    response_url: DOMRefCell<DOMString>,
     status: Cell<u16>,
     status_text: DOMRefCell<ByteString>,
     response: DOMRefCell<ByteString>,
@@ -156,7 +156,7 @@ impl XMLHttpRequest {
             timeout: Cell::new(0u32),
             with_credentials: Cell::new(false),
             upload: JS::from_rooted(&XMLHttpRequestUpload::new(global)),
-            response_url: DOMString::new(),
+            response_url: DOMRefCell::new(DOMString::new()),
             status: Cell::new(0),
             status_text: DOMRefCell::new(ByteString::new(vec!())),
             response: DOMRefCell::new(ByteString::new(vec!())),
@@ -634,7 +634,7 @@ impl XMLHttpRequestMethods for XMLHttpRequest {
 
     // https://xhr.spec.whatwg.org/#the-responseurl-attribute
     fn ResponseURL(&self) -> DOMString {
-        self.response_url.clone()
+        self.response_url.borrow().clone()
     }
 
     // https://xhr.spec.whatwg.org/#the-status-attribute
@@ -906,6 +906,9 @@ impl XMLHttpRequest {
                         self.sync.get());
 
                 self.cancel_timeout();
+
+                println!("woot {:?}", self.response_headers.borrow().get());
+                //*self.response_url.borrow_mut() = DOMString::from(self.response_headers.
 
                 // Part of step 11, send() (processing response end of file)
                 // XXXManishearth handle errors, if any (substep 2)
